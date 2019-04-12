@@ -1,75 +1,37 @@
 #include <iostream>
 using namespace std;
 
-class RelatBase
+struct SalarioBase
 {
-public:
-    void imprime() ;
-
-protected:
-    // Quando se tem pelo menos uma funcao virtual, o compilador cria o vptr (v table)
-        // Cria um vetor com enderecos para as funcoes virtuais da classe
-    virtual void cabec () {}
-    virtual void rodape () {}
-    virtual bool linhaDetalhe () = 0; // Coloca zero na vtable (pure virtual)
-    // classe abstrata = criada para ser herdada
-
-
-    int mLinhasPorPagina = 10;
+    short salario;
 };
 
-void RelatBase::imprime()
+// "virtual" geralmente nao eh tao bom porque fica mais lento
+    // e funciona somente se todos usarem virtual
+struct Descontos : virtual public SalarioBase
 {
-    bool bOk;
-    int nLinhaAtual;
-
-    do
-    {
-        nLinhaAtual = 1;
-
-        cabec();
-
-        while (( bOk = linhaDetalhe() ) &&
-                 nLinhaAtual++ < mLinhasPorPagina);// Pos fixado ptto compara antes de somar
-
-        rodape();
-
-    } while ( bOk );
-}
-
-
-class MeuRelat : public RelatBase
-{
-
-protected:
-    void cabec () override // Serve para indicar que esta eh uma funcao virtual na Base
-    {
-        cout << "===== CABECALHO =====" << endl;
-    }
-
-    void rodape () override
-    {
-        cout << "===== RODAPE =====" << endl;
-        cout << endl;
-    }
-
-    // A funcao não pode ser redefinida na classe derivada.
-    bool linhaDetalhe () final
-    {
-        cout << "linha detalhe: " << mContador << endl;
-        return ++mContador <= 30;
-    }
-
-private:
-    int mContador = 1;
-
+    short desconto;
 };
 
-int main ()
+struct Proventos : virtual public SalarioBase
 {
-    MeuRelat rel;
-    cout << "Size: " << sizeof (rel) << endl;
-    rel.imprime();
+    short proventos;
+};
+
+// A melhor solucao aqui era deixar de herdar nas outras structs e jogar tudo em "Folha"
+struct Folha : public Descontos, public Proventos
+{
+    short folha;
+};
+
+
+int main()
+{
+    Folha f;
+    f.desconto = 1000;
+    f.proventos = 1200;
+    f.salario = 3000;
+    f.folha = f.salario + f.proventos - f.desconto;
 
     return 0;
 }
